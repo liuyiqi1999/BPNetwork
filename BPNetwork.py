@@ -1,6 +1,7 @@
 import random
 
 from NeuronLayer import NeuronLayer
+import numpy as np
 
 
 class BPNetwork:
@@ -21,21 +22,31 @@ class BPNetwork:
         weight_num = 0
         for h in range(len(self.hidden_layer.neurons)):
             for i in range(self.inputs_num):
-                if not hidden_layer_weights:
-                    self.hidden_layer.neurons[h].weights.append(random.random())
-                else:
-                    self.hidden_layer.neurons[h].weights.append(hidden_layer_weights[weight_num])
+                self.hidden_layer.neurons[h].weights.append(hidden_layer_weights[weight_num])
                 weight_num += 1
+
+        # weight_num = 0
+        # for h in range(len(self.hidden_layer.neurons)):
+        #     weights_list = np.empty([self.inputs_num], dtype=int)
+        #     for i in np.nditer(weights_list, op_flags=['readwrite']):
+        #         i[...] = hidden_layer_weights[weight_num]
+        #         weight_num += 1
+        #     self.hidden_layer.neurons[h].weights = np.array(weights_list)
 
     # 初始化隐含层到输出层的 weight
     def init_weights_from_hidden_layer_neurons_to_output_layer_neurons(self, output_layer_weights):
+        # weight_num = 0
+        # for o in range(len(self.output_layer.neurons)):
+        #     weights_list = np.empty([len(self.hidden_layer.neurons)], dtype=int)
+        #     for h in np.nditer(weights_list, op_flags=['readwrite']):
+        #         h[...] = output_layer_weights[weight_num]
+        #         weight_num += 1
+        #     self.output_layer.neurons[o].weights = np.array(weights_list)
+
         weight_num = 0
         for o in range(len(self.output_layer.neurons)):
             for h in range(len(self.hidden_layer.neurons)):
-                if not output_layer_weights:
-                    self.output_layer.neurons[o].weights.append(random.random())
-                else:
-                    self.output_layer.neurons[o].weights.append(output_layer_weights[weight_num])
+                self.output_layer.neurons[o].weights.append(output_layer_weights[weight_num])
                 weight_num += 1
 
     # 输出网络信息
@@ -51,7 +62,7 @@ class BPNetwork:
         print('------')
 
     def feed_forward(self, inputs):
-        hidden_layer_outputs = self.hidden_layer.feed_forward(inputs)
+        hidden_layer_outputs = self.hidden_layer.feed_forward(inputs) # TODO：可伸缩的隐含层
         return self.output_layer.output_forward(hidden_layer_outputs)
 
     def train(self, training_inputs, training_outputs):
@@ -90,7 +101,7 @@ class BPNetwork:
                 self.output_layer.neurons[o].weights[w_ho] -= self.LEARNING_RATE * pd_error_wrt_weight
 
             # bias: ∂Eⱼ/∂bᵢⱼ = ∂E/∂oⱼ * ∂oⱼ/∂bᵢⱼ = ∂E/∂oⱼ * 1
-            pd_error_wrt_output_layer_bias = pd_errors_wrt_output_neuron_total_net_input[o]
+            pd_error_wrt_output_layer_bias = pd_errors_wrt_output_neuron_total_net_input[o] # TODO: 隐含层可伸缩后，bias 的求导公式需要重新计算
 
             # bias: Δb = α * ∂Eⱼ/∂bᵢⱼ
             self.output_layer.bias -= self.LEARNING_RATE * pd_error_wrt_output_layer_bias

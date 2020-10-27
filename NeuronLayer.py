@@ -1,7 +1,7 @@
 import random
 
 from Neuron import Neuron
-
+import numpy as np
 
 class NeuronLayer:
     def __init__(self, neurons_num, bias):
