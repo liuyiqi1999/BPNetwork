@@ -11,6 +11,7 @@ class Neuron:
         self.output = self.activation(self.calculate_total_net_input())
         return self.output
 
+    # 去除 sigmoid 的输出
     def calculate_test_output(self, inputs):
         self.inputs = inputs
         self.output = self.calculate_total_net_input()
