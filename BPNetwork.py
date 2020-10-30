@@ -5,8 +5,9 @@ class BPNetwork:
     LEARNING_RATE = 0.01
 
     def __init__(self, inputs_num, hidden_nums, outputs_num, hidden_layers_weights=None, hidden_layers_bias=None,
-                 output_layer_weights=None, output_layer_bias=None):
+                 output_layer_weights=None, output_layer_bias=None, softmax_enabled=0):
         self.inputs_num = inputs_num
+        self.softmax_enabled = softmax_enabled
 
         self.hidden_layers = []
         for i in range(len(hidden_nums)):
@@ -16,7 +17,7 @@ class BPNetwork:
         self.init_weights_from_inputs_to_hidden_layers_neurons(hidden_layers_weights)
         self.init_weights_from_hidden_layer_neurons_to_output_layer_neurons(output_layer_weights)
 
-    # 初始化输入层到隐含层的 weight
+    # 初始化输入层到隐含层、隐含层之间的 weight
     def init_weights_from_inputs_to_hidden_layers_neurons(self, hidden_layers_weights):
         for hl in range(len(self.hidden_layers)):
             weight_num = 0
@@ -54,12 +55,20 @@ class BPNetwork:
         print('------')
         print('* Inputs: {}'.format(self.inputs_num))
         print('------')
-        print('Hidden Layer')
-        self.hidden_layer.inspect()
-        print('------')
+        # print('Hidden Layer')
+        # for i in range(len(self.hidden_layers)):
+        #     self.hidden_layers[i].inspect()
+        # print('------')
         print('* Output Layer')
         self.output_layer.inspect()
         print('------')
+
+    def softmax_feed_forward(self, inputs):
+        last_hidden_layer_outputs = inputs
+        for hl in range(len(self.hidden_layers)):
+            last_hidden_layer_outputs = self.hidden_layers[hl].feed_forward(last_hidden_layer_outputs)
+
+        return self.output_layer.softmax_output_forward(last_hidden_layer_outputs)
 
     def feed_forward(self, inputs):
         last_hidden_layer_outputs = inputs
@@ -69,16 +78,31 @@ class BPNetwork:
         return self.output_layer.output_forward(last_hidden_layer_outputs)
 
     def train(self, training_inputs, training_outputs):
-        self.feed_forward(training_inputs)
+        if self.softmax_enabled == 1:
+            self.softmax_feed_forward(training_inputs)
+        else:
+            self.feed_forward(training_inputs)
 
-        # 正向传播：获得输出层的值（输入 -> 输出）
+        # 以下是求导
+
+        # 输出层：d(Loss Function)/d(Output)
         pd_errors_wrt_output_neuron_total_net_input = [0] * len(self.output_layer.neurons)
-        for o in range(len(self.output_layer.neurons)):
-            # ∂E/∂iⱼ
-            pd_errors_wrt_output_neuron_total_net_input[o] = self.output_layer.neurons[
-                o].calculate_test_pd_error_wrt_total_net_input(training_outputs[o])
+        if self.softmax_enabled == 1:
+            # ∂E/∂Si: 对于所有的 Si，d(Cross)/d(SoftMax_Output) 都是 -Σ Ei/Si
+            pd_cross_error_wrt_softmax_output = self.output_layer.calculate_pd_cross_error_wrt_softmax_output(
+                training_outputs)
+            pd_cross_error_wrt_softmax_output_array = [pd_cross_error_wrt_softmax_output] * len(
+                self.output_layer.neurons)
+            # ∂E/∂i = ∂E/∂Si * ∂Si/∂i
+            pd_errors_wrt_output_neuron_total_net_input = self.output_layer.calculate_pd_cross_error_wrt_total_net_input(
+                pd_cross_error_wrt_softmax_output_array)
+        else:
+            for o in range(len(self.output_layer.neurons)):
+                # ∂E/∂iⱼ
+                pd_errors_wrt_output_neuron_total_net_input[o] = self.output_layer.neurons[
+                    o].calculate_test_pd_error_wrt_total_net_input(training_outputs[o])
 
-        # 反向传播：获得隐含层的值（输出 -> 隐含）
+        # 隐含层：d(Output_input)/d(Hidden_input)
         pd_errors_wrt_hidden_neuron_total_net_input_array = [[]] * len(self.hidden_layers)
         last_layer_pd_errors_wrt_neuron_total_net_input = pd_errors_wrt_output_neuron_total_net_input
         last_layer = self.output_layer
@@ -86,13 +110,13 @@ class BPNetwork:
             pd_errors_wrt_hidden_neuron_total_net_input = [0] * len(self.hidden_layers[-hl].neurons)
             for h in range(len(self.hidden_layers[-hl].neurons)):
 
-                # dE/dhⱼ = Σ ∂E/∂oⱼ * ∂o/∂hⱼ = Σ ∂E/∂oⱼ * wᵢⱼ
+                # dE/dhoⱼ = Σ ∂E/∂oiⱼ * ∂oi/∂hoⱼ = Σ ∂E/∂oiⱼ * wᵢⱼ
                 d_error_wrt_hidden_neuron_output = 0
                 for o in range(len(last_layer.neurons)):
                     d_error_wrt_hidden_neuron_output += last_layer_pd_errors_wrt_neuron_total_net_input[o] * \
                                                         last_layer.neurons[o].weights[h]
 
-                # ∂E/∂oⱼ = ∂E/∂hⱼ * ∂hⱼ/∂oⱼ
+                # ∂E/∂hiⱼ = ∂E/∂hoⱼ * ∂hoⱼ/∂hiⱼ
                 pd_errors_wrt_hidden_neuron_total_net_input[h] = d_error_wrt_hidden_neuron_output * \
                                                                  self.hidden_layers[-hl].neurons[
                                                                      h].calculate_pd_total_net_input_wrt_input()
@@ -131,7 +155,8 @@ class BPNetwork:
 
                     # bias: ∂Eⱼ/∂bᵢⱼ = Σ ∂E/∂hⱼ * ∂hⱼ/∂bᵢⱼ * w = Σ ∂E/∂hⱼ * w
                     pd_error_wrt_hidden_layer_bias += pd_errors_wrt_hidden_neuron_total_net_input_array[-hl][
-                        h] * self.hidden_layers[-hl].neurons[h].weights[w_hh]  # TODO: 隐含层可伸缩后，bias 的求导公式需要重新计算
+                                                          h] * self.hidden_layers[-hl].neurons[h].weights[
+                                                          w_hh]
 
             # bias: Δb = α * ∂Eⱼ/∂bᵢⱼ
             self.hidden_layers[-hl].bias -= self.LEARNING_RATE * pd_error_wrt_hidden_layer_bias
