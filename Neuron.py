@@ -26,10 +26,10 @@ class Neuron:
 
     # 激活函数
     def activation(self, total_net_input):
-        if total_net_input >= 0:  # 对sigmoid函数的优化，避免了出现极大的数据溢出
-            return 1.0 / (1 + math.exp(-total_net_input))
-        else:
-            return math.exp(total_net_input) / (1 + math.exp(total_net_input))
+        # if total_net_input >= 0:  # 对sigmoid函数的优化，避免了出现极大的数据溢出
+        return 1.0 / (1 + math.exp(-total_net_input))
+        # else:
+        #    return math.exp(total_net_input) / (1 + math.exp(total_net_input))
 
     # ∂E/∂i = ∂E/∂o * ∂o/∂i
     def calculate_pd_error_wrt_total_net_input(self, target_output):

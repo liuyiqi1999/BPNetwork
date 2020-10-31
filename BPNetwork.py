@@ -67,14 +67,12 @@ class BPNetwork:
         last_hidden_layer_outputs = inputs
         for hl in range(len(self.hidden_layers)):
             last_hidden_layer_outputs = self.hidden_layers[hl].feed_forward(last_hidden_layer_outputs)
-
         return self.output_layer.softmax_output_forward(last_hidden_layer_outputs)
 
     def feed_forward(self, inputs):
         last_hidden_layer_outputs = inputs
         for hl in range(len(self.hidden_layers)):
             last_hidden_layer_outputs = self.hidden_layers[hl].feed_forward(last_hidden_layer_outputs)
-
         return self.output_layer.output_forward(last_hidden_layer_outputs)
 
     def train(self, training_inputs, training_outputs):
@@ -91,11 +89,9 @@ class BPNetwork:
             # ∂E/∂Si: 对于所有的 Si，d(Cross)/d(SoftMax_Output) 都是 -Σ Ei/Si
             pd_cross_error_wrt_softmax_output = self.output_layer.calculate_pd_cross_error_wrt_softmax_output(
                 training_outputs)
-            pd_cross_error_wrt_softmax_output_array = [pd_cross_error_wrt_softmax_output] * len(
-                self.output_layer.neurons)
             # ∂E/∂i = ∂E/∂Si * ∂Si/∂i
             pd_errors_wrt_output_neuron_total_net_input = self.output_layer.calculate_pd_cross_error_wrt_total_net_input(
-                pd_cross_error_wrt_softmax_output_array)
+                pd_cross_error_wrt_softmax_output)
         else:
             for o in range(len(self.output_layer.neurons)):
                 # ∂E/∂iⱼ

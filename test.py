@@ -1,13 +1,13 @@
 import random
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle
 import time
 from PIL import Image
 
 from BPNetwork import BPNetwork
 
 HIDDEN_UNIT_NUM = 50
+
 
 # nn = BPNetwork(2, [2, 2], 2, hidden_layers_weights=[[0.15, 0.2, 0.25, 0.3], [0.15, 0.2, 0.25, 0.3]],
 #                hidden_layers_bias=[0.35, 0.35],
@@ -31,9 +31,6 @@ HIDDEN_UNIT_NUM = 50
 #     print(i, nn.calculate_total_error(training_sets))
 
 # # sinx 拟合
-# INPUT_NUM = 1
-# OUTPUT_NUM = 1
-
 # hlw = []
 # olw = []
 # for i in range(HIDDEN_UNIT_NUM):
@@ -42,11 +39,8 @@ HIDDEN_UNIT_NUM = 50
 #
 # hlb = -random.random() / 100
 # olb = -random.random() / 100
-
-# file1 = open('data/1604111264.6162848.txt', 'rb')
-# nn = pickle.load(file1)
-
-# training_sets = []
+#
+# # training_sets = []
 # nn = BPNetwork(1, [HIDDEN_UNIT_NUM], 1, hidden_layers_weights=[hlw], hidden_layers_bias=[hlb],
 #                output_layer_weights=olw, output_layer_bias=olb)
 # for i in range(100000):
@@ -58,7 +52,7 @@ HIDDEN_UNIT_NUM = 50
 #     nn.train(training_inputs, training_outputs)
 #     # print(i, nn.calculate_total_error(training_sets))
 #     print(i)
-
+#
 # x = np.arange(-np.pi, np.pi, 0.01)
 # y = []
 # Y = []
@@ -68,16 +62,13 @@ HIDDEN_UNIT_NUM = 50
 # plt.plot(x, y)
 # plt.plot(x, Y, color='red', linestyle='--')
 # plt.show()
-
+#
 # diffAverage = 0
 # for i in range(len(y)):
 #     diffAverage += np.abs(Y[i] - y[i])
 # diffAverage = diffAverage / len(y)
 # print(diffAverage)
-#
-# file = open('data/' + str(time.time()) + '.txt', 'wb')
-# pickle.dump(nn, file)
-# file.close()
+
 
 # 汉字分类
 # 产生训练数据集(600）
@@ -99,7 +90,7 @@ for c in range(12):
     ns = np.random.randint(600, size=600)
     for n in ns:
         img = Image.open('train/' + str(c + 1) + '/' + str(n + 1) + '.bmp')
-        training_inputs[count] = np.resize(convert_to_bw(img, 'train_cache/' + str(c + 1) + '/' + str(n + 1) + '.bmp'),
+        training_inputs[count] = np.resize(convert_to_bw(img, 'train/' + str(c + 1) + '/' + str(n + 1) + '.bmp'),
                                            (28 * 28))
         output = np.zeros(12)
         output[c] = 1
@@ -123,7 +114,7 @@ count = 0
 for c in range(12):
     for n in range(20):
         img = Image.open('train/' + str(c + 1) + '/' + str(600 + n + 1) + '.bmp')
-        test_inputs[count] = np.resize(convert_to_bw(img, 'train_cache/' + str(c + 1) + '/' + str(600 + n + 1) + '.bmp'),
+        test_inputs[count] = np.resize(convert_to_bw(img, 'train/' + str(c + 1) + '/' + str(600 + n + 1) + '.bmp'),
                                        (28 * 28))
         test_outputs[count] = c
         count += 1
@@ -144,18 +135,18 @@ olb = -random.random() / 100
 
 # 从文件读取
 # hlw = []
-# with open('data/hlw_30_output_1604084547.4894679.txt') as f:
+# with open('data/hlw_output_1604071206.449504.txt') as f:
 #     for line in f:
 #         hlw.append(float(line[0:-3]))
 # print(hlw)
 # olw = []
-# with open('data/olw_30_output_1604084547.5659242.txt') as f:
+# with open('data/olw_output_1604071206.5246542.txt') as f:
 #     for line in f:
 #         olw.append(float(line[0:-3]))
 # print(olw)
 #
 # b = []
-# with open('data/b_30_output_1604084547.6281118.txt') as f:
+# with open('data/olb_output_1604071206.617167.txt') as f:
 #     for line in f:
 #         b.append(float(line[0:-3]))
 # hlb = b[0]
@@ -164,17 +155,13 @@ olb = -random.random() / 100
 
 nn = BPNetwork(INPUT_NUM, [HIDDEN_UNIT_NUM], OUTPUT_NUM, hidden_layers_weights=[hlw], hidden_layers_bias=[hlb],
                output_layer_weights=olw, output_layer_bias=olb, softmax_enabled=1)
+
 TIMES = 8
 
 for i in range(TIMES):
     for c in range(12 * 600):
         nn.train(randomized_training_inputs[c], randomized_training_outputs[c])
         print(str(i) + ": " + str(np.floor(c / 600)) + "/" + str(c % 600))
-
-# 持久化
-file = open('data/h_'+str(TIMES)+'_' + str(time.time()) + '.data', 'wb')
-pickle.dump(nn, file)
-file.close()
 
 # 计算正确率
 success = 0
@@ -189,6 +176,26 @@ for i in range(12 * 20):
 print(success)
 result = success / (12 * 20)
 print(result)
+
+# 持久化
+hl_weights = []
+for hl in nn.hidden_layers:
+    for n in hl.neurons:
+        hl_weights.append(n.weights)
+hlw_output = np.resize(np.array(hl_weights), (len(nn.hidden_layers) * HIDDEN_UNIT_NUM * INPUT_NUM))
+np.savetxt('data/hlw_output_' + str(time.time()) + '.txt', hlw_output, fmt="%.17f", delimiter=',')
+
+ol_weights = []
+for n in nn.output_layer.neurons:
+    ol_weights.append(n.weights)
+ol_output = np.resize(np.array(ol_weights), HIDDEN_UNIT_NUM * OUTPUT_NUM)
+np.savetxt('data/olw_output_' + str(time.time()) + '.txt', hlw_output, fmt="%.17f", delimiter=',')
+
+b = []
+for hl in nn.hidden_layers:
+    b.append(hl.bias)
+b.append(nn.output_layer.bias)
+np.savetxt('data/b_output_' + str(time.time()) + '.txt', b, fmt="%.17f", delimiter=',')
 
 # 过拟合测试
 # print(randomized_training_inputs[1])
