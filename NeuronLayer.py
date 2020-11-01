@@ -45,6 +45,9 @@ class NeuronLayer:
         for neuron in self.neurons:
             outputs.append(neuron.calculate_test_output(inputs))
         return self.softmax(outputs)
+        # result = self.softmax(outputs)
+        # print(result)
+        # return result
 
     def get_softmax_outputs(self):
         outputs = []
