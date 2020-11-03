@@ -87,25 +87,17 @@
 
    平均误差：0.20698787
 
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201101182709200.png" alt="image-20201101182709200" style="zoom:67%;" />
-
 2. 训练 100000 次
 
    平均误差：0.01479212
-
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201101182642174.png" alt="image-20201101182642174" style="zoom:67%;" />
 
 3. 训练 1000000 次
 
    平均误差：0.02607785
 
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201101182534590.png" alt="image-20201101182534590" style="zoom:67%;" />
-
 4. 训练 10000000 次
 
    平均误差：3.14429901e-05
-
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201031212633259.png" alt="image-20201031212633259" style="zoom:67%;" />
 
 
 
@@ -117,22 +109,16 @@
 1. 训练 100000 次
 
    平均误差：0.06904464
-
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201031213755284.png" alt="image-20201031213755284" style="zoom:67%;" />
-
+   
 2. 训练 1000000 次
 
    平均误差：0.13049339
-
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201031213625189.png" alt="image-20201031213625189" style="zoom:67%;" />
 
    > 可以看出在 weights、bias 范围较大的情况下，训练次数越多，训练效果反而越差，因此不进一步增大次数了。
 
 3. 训练 500000 次
 
    平均误差：0.02680116
-
-   <img src="/Users/liuyiqi/Nutstore Files/同步文档/2020第一学期课程/智能系统/BPNetwork/readme.assets/image-20201031215619508.png" alt="image-20201031215619508" style="zoom:67%;" />
 
    > 在 500000 次附近调整次数训练效果都比较差，考虑是因为初始值范围过大导致的，因此不进一步试验。
 
